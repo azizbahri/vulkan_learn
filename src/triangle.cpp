@@ -166,6 +166,7 @@ private:
         // 2. and the device features we will be using
         // 3. and the device extensions we will be using
         // 4. and the validation layers we will be using
+        // 5. and the swap chain we will be using
 
         // specify the queue family to create
         QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
@@ -193,13 +194,14 @@ private:
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-        ;
+
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
         createInfo.pEnabledFeatures = &deviceFeatures;
 
         // specify the device extensions
-        createInfo.enabledExtensionCount = 0;
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
         // specify the validation layers
         if (enableValidationLayers)
