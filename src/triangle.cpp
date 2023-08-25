@@ -39,6 +39,13 @@ struct QueueFamilyIndices
     }
 };
 
+struct SwapChainSupportDetails
+{
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+};
+
 /**
  * proxy function for vkCreateDebugUtilsMessengerEXT
  * This function is used to load the vkCreateDebugUtilsMessengerEXT function from the vulkan library
@@ -131,23 +138,7 @@ private:
         // create a window
         window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
     }
-    void initVulkan()
-    {
-        // create a vulkan instance
-        createInstance();
 
-        // setup debug messenger
-        setupDebugMessenger();
-
-        // create a surface to draw to
-        createSurface();
-
-        // pick a physical device
-        pickPhysicalDevice();
-
-        // create a logical device
-        createLogicalDevice();
-    }
 
     // create a surface to draw to
     void createSurface()
@@ -523,6 +514,24 @@ private:
         }
 
         return VK_FALSE;
+    }
+
+    void initVulkan()
+    {
+        // create a vulkan instance
+        createInstance();
+
+        // setup debug messenger
+        setupDebugMessenger();
+
+        // create a surface to draw to
+        createSurface();
+
+        // pick a physical device
+        pickPhysicalDevice();
+
+        // create a logical device
+        createLogicalDevice();
     }
 
     void mainLoop()
