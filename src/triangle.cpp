@@ -130,6 +130,9 @@ private:
     // surface to draw to
     VkSurfaceKHR surface;
 
+    // swap chain
+    VkSwapchainKHR swapChain;
+
     void initWindow()
     {
         // initialize glfw
@@ -502,6 +505,9 @@ private:
 
     void cleanup()
     {
+        // destroy the swap chain
+        vkDestroySwapchainKHR(device, swapChain, nullptr);
+
         // destory the logical device
         vkDestroyDevice(device, nullptr);
 
@@ -599,7 +605,66 @@ private:
 
         return VK_FALSE;
     }
+    void createSwapChain()
+    {
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
 
+        VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
+        VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
+        VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+
+        uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+
+        // check if the image count is greater than the minimum image count and less than the maximum image count
+        if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
+        {
+            imageCount = swapChainSupport.capabilities.maxImageCount;
+        }
+
+        // create the swap chain
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = surface;
+        createInfo.minImageCount = imageCount;                       // minimum number of images in the swap chain
+        createInfo.imageFormat = surfaceFormat.format;               // the format of the swap chain images
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;       // the color space of the swap chain images
+        createInfo.imageExtent = extent;                             // the resolution of the swap chain images
+        createInfo.imageArrayLayers = 1;                             // the number of layers each image consists of
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // rendering directly to the swap chain images
+
+        // specify how to handle swap chain images that will be used across multiple queue families
+        // we will be drawing to the swap chain images in the graphics queue family and then submitting them on the presentation queue family
+        QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+        uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+
+        if (indices.graphicsFamily != indices.presentFamily)
+        {
+            // if the graphics queue family is not the same as the presentation queue family, then we must use concurrent sharing mode
+            // this means that an image can be used across multiple queue families without explicit ownership transfers
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        }
+        else
+        {
+            // if the graphics queue family is the same as the presentation queue family, then we can use exclusive sharing mode
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            createInfo.queueFamilyIndexCount = 0;     // Optional
+            createInfo.pQueueFamilyIndices = nullptr; // Optional
+        }
+
+        createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // the transform to apply to swap chain images (e.g. rotate 90 degrees) (no transform in this case)
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // the alpha channel to use for blending with other windows in the window system (no blending in this case)
+        createInfo.presentMode = presentMode;                          // the presentation mode to use (e.g. immediate, vsync, etc.)
+        createInfo.clipped = VK_TRUE;                                   // whether to clip pixels that are obscured by other windows (we don't care about obscured pixels, so enable clipping)
+        createInfo.oldSwapchain = VK_NULL_HANDLE;                      // the old swap chain in case the current one becomes invalid (e.g. window was resized)
+
+        // create the swap chain
+        if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create swap chain!");
+        }
+    }
     void initVulkan()
     {
         // create a vulkan instance
@@ -616,6 +681,9 @@ private:
 
         // create a logical device
         createLogicalDevice();
+
+        // create the swap chain
+        createSwapChain();
     }
 
     void mainLoop()
