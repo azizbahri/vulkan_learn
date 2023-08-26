@@ -133,6 +133,13 @@ private:
     // swap chain
     VkSwapchainKHR swapChain;
 
+    // swap chain images handles
+    std::vector<VkImage> swapChainImages;
+
+    // store swap chain settings
+    VkFormat swapChainImageFormat;
+    VkExtent2D swapChainExtent;
+
     void initWindow()
     {
         // initialize glfw
@@ -664,6 +671,15 @@ private:
         {
             throw std::runtime_error("failed to create swap chain!");
         }
+
+        // retrive the swap chain images
+        vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+        swapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+
+        // store the swap chain settings
+        swapChainImageFormat = surfaceFormat.format;
+        swapChainExtent = extent;
     }
     void initVulkan()
     {
