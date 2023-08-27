@@ -513,37 +513,6 @@ private:
         }
     }
 
-    void cleanup()
-    {
-        for (auto imageView : swapChainImageViews)
-        {
-            vkDestroyImageView(device, imageView, nullptr);
-        }
-        // destroy the swap chain
-        vkDestroySwapchainKHR(device, swapChain, nullptr);
-
-        // destory the logical device
-        vkDestroyDevice(device, nullptr);
-
-        // destroy the debug messenger if validation layers are enabled
-        if (enableValidationLayers)
-        {
-            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-        }
-
-        // destroy the surface
-        vkDestroySurfaceKHR(instance, surface, nullptr);
-
-        // destroy the instance
-        vkDestroyInstance(instance, nullptr);
-
-        // destroy the window
-        glfwDestroyWindow(window);
-
-        // terminate glfw
-        glfwTerminate();
-    }
-
     /**
      * Check if the validation layers are supported
      * @return true if the validation layers are supported, false otherwise
@@ -738,6 +707,37 @@ private:
 
         // create the image views
         createImageViews();
+    }
+
+    void cleanup()
+    {
+        for (auto imageView : swapChainImageViews)
+        {
+            vkDestroyImageView(device, imageView, nullptr);
+        }
+        // destroy the swap chain
+        vkDestroySwapchainKHR(device, swapChain, nullptr);
+
+        // destory the logical device
+        vkDestroyDevice(device, nullptr);
+
+        // destroy the debug messenger if validation layers are enabled
+        if (enableValidationLayers)
+        {
+            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        }
+
+        // destroy the surface
+        vkDestroySurfaceKHR(instance, surface, nullptr);
+
+        // destroy the instance
+        vkDestroyInstance(instance, nullptr);
+
+        // destroy the window
+        glfwDestroyWindow(window);
+
+        // terminate glfw
+        glfwTerminate();
     }
 
     void mainLoop()
