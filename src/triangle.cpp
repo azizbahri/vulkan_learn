@@ -140,6 +140,9 @@ private:
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
 
+    // swap chain image views
+    std::vector<VkImageView> swapChainImageViews;
+
     void initWindow()
     {
         // initialize glfw
@@ -512,6 +515,10 @@ private:
 
     void cleanup()
     {
+        for (auto imageView : swapChainImageViews)
+        {
+            vkDestroyImageView(device, imageView, nullptr);
+        }
         // destroy the swap chain
         vkDestroySwapchainKHR(device, swapChain, nullptr);
 
@@ -661,10 +668,10 @@ private:
         }
 
         createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // the transform to apply to swap chain images (e.g. rotate 90 degrees) (no transform in this case)
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // the alpha channel to use for blending with other windows in the window system (no blending in this case)
-        createInfo.presentMode = presentMode;                          // the presentation mode to use (e.g. immediate, vsync, etc.)
-        createInfo.clipped = VK_TRUE;                                   // whether to clip pixels that are obscured by other windows (we don't care about obscured pixels, so enable clipping)
-        createInfo.oldSwapchain = VK_NULL_HANDLE;                      // the old swap chain in case the current one becomes invalid (e.g. window was resized)
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;            // the alpha channel to use for blending with other windows in the window system (no blending in this case)
+        createInfo.presentMode = presentMode;                                     // the presentation mode to use (e.g. immediate, vsync, etc.)
+        createInfo.clipped = VK_TRUE;                                             // whether to clip pixels that are obscured by other windows (we don't care about obscured pixels, so enable clipping)
+        createInfo.oldSwapchain = VK_NULL_HANDLE;                                 // the old swap chain in case the current one becomes invalid (e.g. window was resized)
 
         // create the swap chain
         if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
@@ -681,6 +688,34 @@ private:
         swapChainImageFormat = surfaceFormat.format;
         swapChainExtent = extent;
     }
+
+    void createImageViews()
+    {
+        swapChainImageViews.resize(swapChainImages.size());
+
+        for (size_t i = 0; i < swapChainImages.size(); i++)
+        {
+            VkImageViewCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = swapChainImages[i];
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = swapChainImageFormat;
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+            if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS)
+            {
+                throw std::runtime_error("failed to create image views!");
+            }
+        }
+    }
+
     void initVulkan()
     {
         // create a vulkan instance
@@ -700,6 +735,9 @@ private:
 
         // create the swap chain
         createSwapChain();
+
+        // create the image views
+        createImageViews();
     }
 
     void mainLoop()
