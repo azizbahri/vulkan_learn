@@ -401,10 +401,13 @@ private:
 
         return VK_FALSE;
     }
+    void createGraphicsPipeline()
+    {
 
+    }
     /**
-     * Main Functions used to create vulkan objects
-    */
+     * Main Functions used to initialize vulkan
+     */
     void createImageViews()
     {
         swapChainImageViews.resize(swapChainImages.size());
@@ -502,7 +505,7 @@ private:
         swapChainExtent = extent;
     }
 
-   // create a logical device
+    // create a logical device
     void createLogicalDevice()
     {
         // to create a logical device we need to
@@ -567,7 +570,7 @@ private:
         vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
     }
 
-// pick a physical device
+    // pick a physical device
     void pickPhysicalDevice()
     {
         // get the number of physical devices
@@ -742,6 +745,9 @@ private:
 
         // terminate glfw
         glfwTerminate();
+
+        // create graphics pipeline
+        createGraphicsPipeline();
     }
 
     void mainLoop()
