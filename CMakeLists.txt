@@ -37,3 +37,18 @@ target_link_libraries(test ${LIBS})
 
 #set the libraries for triangle tutorial
 target_link_libraries(triangle ${LIBS})
+
+#copy the shaders to the build directory
+file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${CMAKE_BINARY_DIR})
+
+# build the shaders
+add_custom_target(
+    shaders
+    COMMAND glslc ${CMAKE_SOURCE_DIR}/shaders/shader.vert -o ${CMAKE_BINARY_DIR}/shaders/vert.spv
+    COMMAND glslc ${CMAKE_SOURCE_DIR}/shaders/shader.frag -o ${CMAKE_BINARY_DIR}/shaders/frag.spv
+    DEPENDS ${CMAKE_SOURCE_DIR}/shaders/shader.vert ${CMAKE_SOURCE_DIR}/shaders/shader.frag
+    COMMENT "Building shaders"
+)
+
+#add the shaders as a dependency for the triangle tutorial
+add_dependencies(triangle shaders)
