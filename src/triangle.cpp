@@ -527,6 +527,9 @@ private:
         multisampling.pSampleMask = nullptr;            // Optional
         multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
         multisampling.alphaToOneEnable = VK_FALSE;      // Optional
+
+        vkDestroyShaderModule(device, fragShaderModule, nullptr);
+        vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
     /**
      * Main Functions used to initialize vulkan
@@ -837,6 +840,9 @@ private:
 
         // create the image views
         createImageViews();
+
+        // create graphics pipeline
+        createGraphicsPipeline();
     }
 
     void cleanup()
@@ -868,9 +874,6 @@ private:
 
         // terminate glfw
         glfwTerminate();
-
-        // create graphics pipeline
-        createGraphicsPipeline();
     }
 
     void mainLoop()
